@@ -1,5 +1,7 @@
 # openstack-janitor
 
+[![CI](https://github.com/mabunemeh/openstack-janitor/actions/workflows/ci.yml/badge.svg)](https://github.com/mabunemeh/openstack-janitor/actions/workflows/ci.yml)
+
 A CLI that audits an OpenStack cloud for orphaned and wasteful resources.
 
 **Status: early development.** The first detector (unattached volumes) is

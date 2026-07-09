@@ -5,10 +5,9 @@ from __future__ import annotations
 from openstack.exceptions import ForbiddenException
 
 from openstack_janitor.detectors.volumes import UnattachedVolumesDetector
-from tests.conftest import fake_volume
 
 
-def test_finds_unattached_available_volume(fake_conn) -> None:
+def test_finds_unattached_available_volume(fake_conn, fake_volume) -> None:
     vol = fake_volume(status="available", attachments=[])
     fake_conn.block_storage.volumes.return_value = [vol]
 
@@ -23,7 +22,7 @@ def test_finds_unattached_available_volume(fake_conn) -> None:
     assert "unattached" in finding.reason
 
 
-def test_ignores_in_use_volume_with_attachments(fake_conn) -> None:
+def test_ignores_in_use_volume_with_attachments(fake_conn, fake_volume) -> None:
     vol = fake_volume(status="in-use", attachments=[{"server_id": "srv-1"}])
     fake_conn.block_storage.volumes.return_value = [vol]
 
@@ -32,7 +31,7 @@ def test_ignores_in_use_volume_with_attachments(fake_conn) -> None:
     assert findings == []
 
 
-def test_ignores_available_but_attached_edge_case(fake_conn) -> None:
+def test_ignores_available_but_attached_edge_case(fake_conn, fake_volume) -> None:
     # Defensive: a volume reporting "available" status but with a stale/leftover
     # attachment record should not be flagged as an orphan.
     vol = fake_volume(status="available", attachments=[{"server_id": "srv-1"}])
@@ -43,7 +42,7 @@ def test_ignores_available_but_attached_edge_case(fake_conn) -> None:
     assert findings == []
 
 
-def test_falls_back_when_all_projects_forbidden(fake_conn) -> None:
+def test_falls_back_when_all_projects_forbidden(fake_conn, fake_volume) -> None:
     vol = fake_volume(status="available", attachments=[])
 
     def volumes_side_effect(*args, **kwargs):
@@ -63,7 +62,7 @@ def test_falls_back_when_all_projects_forbidden(fake_conn) -> None:
     assert "all_projects" not in second_call_kwargs
 
 
-def test_name_none_is_handled(fake_conn) -> None:
+def test_name_none_is_handled(fake_conn, fake_volume) -> None:
     vol = fake_volume(status="available", attachments=[], name=None)
     fake_conn.block_storage.volumes.return_value = [vol]
 

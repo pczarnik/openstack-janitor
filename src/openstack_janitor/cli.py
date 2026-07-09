@@ -1,0 +1,82 @@
+"""Command-line interface for openstack-janitor."""
+
+from __future__ import annotations
+
+import typer
+from openstack.exceptions import SDKException
+from rich.console import Console
+
+from openstack_janitor.connection import get_connection
+from openstack_janitor.detectors import get_detectors
+from openstack_janitor.reporting import print_findings
+
+app = typer.Typer(
+    help="Audit an OpenStack cloud for orphaned and wasteful resources.",
+    no_args_is_help=True,
+)
+console = Console()
+error_console = Console(stderr=True)
+
+
+@app.callback()
+def callback() -> None:
+    """Audit an OpenStack cloud for orphaned and wasteful resources.
+
+    A no-op callback: its only purpose is to keep Typer in "subcommand" mode
+    (`janitor audit ...`) instead of collapsing to a single implicit command,
+    since there is currently only one subcommand registered.
+    """
+
+
+@app.command()
+def audit(
+    cloud: str | None = typer.Option(
+        None,
+        "--cloud",
+        help="Named cloud from clouds.yaml (default: resolved from OS_CLOUD / OS_* env vars).",
+    ),
+    detector: list[str] | None = typer.Option(
+        None,
+        "--detector",
+        help="Run only this detector (repeatable). Default: run all registered detectors.",
+    ),
+) -> None:
+    """Scan the cloud and report orphaned/wasteful resources.
+
+    Exit codes: 0 = no findings, 1 = findings were reported (useful for cron
+    jobs), 2 = an unknown --detector name was given, 3 = connection or
+    authentication to the cloud failed.
+    """
+    all_detectors = get_detectors()
+    selected = all_detectors
+    if detector:
+        by_name = {d.name: d for d in all_detectors}
+        unknown = [name for name in detector if name not in by_name]
+        if unknown:
+            valid = ", ".join(sorted(by_name)) or "(none registered)"
+            error_console.print(
+                f"[red]Unknown detector(s): {', '.join(unknown)}. Valid detectors: {valid}[/red]"
+            )
+            raise typer.Exit(code=2)
+        selected = [by_name[name] for name in detector]
+
+    try:
+        conn = get_connection(cloud)
+        findings = []
+        for det in selected:
+            findings.extend(det.detect(conn))
+    except SDKException as exc:
+        error_console.print(f"[red]Failed to connect to OpenStack cloud: {exc}[/red]")
+        raise typer.Exit(code=3) from exc
+
+    print_findings(findings, console)
+    raise typer.Exit(code=1 if findings else 0)
+
+
+def main() -> None:
+    """Console-script entry point (typer's ``app`` is not itself callable-as-main)."""
+    app()
+
+
+if __name__ == "__main__":
+    main()

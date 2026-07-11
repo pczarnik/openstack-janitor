@@ -6,10 +6,14 @@ class and append it here. A config-driven enable/disable toggle (e.g. via
 """
 
 from openstack_janitor.detectors.base import Detector, Finding
+from openstack_janitor.detectors.floating_ips import UnassociatedFloatingIpsDetector
+from openstack_janitor.detectors.ports import OrphanedPortsDetector
 from openstack_janitor.detectors.volumes import UnattachedVolumesDetector
 
 ALL_DETECTORS: list[type[Detector]] = [
     UnattachedVolumesDetector,
+    UnassociatedFloatingIpsDetector,
+    OrphanedPortsDetector,
 ]
 
 

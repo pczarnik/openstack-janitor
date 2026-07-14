@@ -4,6 +4,20 @@ All notable changes to this project are documented in this file. The format
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions
 follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-07-14
+
+### Changed
+
+- Lowered the minimum supported Python from 3.11 to 3.9. On older
+  interpreters pip automatically resolves the newest compatible
+  openstacksdk. CI now tests Python 3.9 through 3.13.
+
+### Added
+
+- Standalone Linux x86_64 binary attached to GitHub releases. Built against
+  glibc 2.28, so it runs on RHEL 8-era hosts without any Python install.
+- Install troubleshooting notes for old distro-patched pip versions.
+
 ## [0.1.0] - 2026-07-14
 
 First release: the complete read-only audit story.
@@ -28,4 +42,5 @@ First release: the complete read-only audit story.
 - Non-admin fallback: detectors that use admin-only `all_projects` listings
   retry scoped to the caller's own project when forbidden.
 
+[0.1.1]: https://github.com/mabunemeh/openstack-janitor/releases/tag/v0.1.1
 [0.1.0]: https://github.com/mabunemeh/openstack-janitor/releases/tag/v0.1.0

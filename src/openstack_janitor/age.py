@@ -7,7 +7,7 @@ action behind a minimum resource age.
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 
 def age_in_days(timestamp: str | None, *, now: datetime | None = None) -> float | None:
@@ -30,13 +30,16 @@ def age_in_days(timestamp: str | None, *, now: datetime | None = None) -> float 
         return None
 
     try:
+        # The "Z" -> "+00:00" swap is REQUIRED (not just belt-and-braces) on
+        # Python < 3.11: datetime.fromisoformat() there cannot parse a
+        # trailing "Z" at all and raises ValueError.
         parsed = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
     except ValueError:
         return None
 
     if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=UTC)
+        parsed = parsed.replace(tzinfo=timezone.utc)
 
-    reference = now if now is not None else datetime.now(UTC)
+    reference = now if now is not None else datetime.now(timezone.utc)
 
     return (reference - parsed).total_seconds() / 86400

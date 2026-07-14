@@ -7,7 +7,7 @@ name = "openstack-janitor"
 version = "0.1.0"
 description = "Audit an OpenStack cloud for orphaned and wasteful resources"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.9"
 license = "Apache-2.0"
 authors = [
     { name = "Mohammad AbuNemeh", email = "mabunemeh@gmail.com" },
@@ -33,13 +33,20 @@ packages = ["src/openstack_janitor"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py311"
+target-version = "py39"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
 
 [tool.ruff.lint.flake8-bugbear]
 extend-immutable-calls = ["typer.Argument", "typer.Option"]
+
+[tool.ruff.lint.pyupgrade]
+# cli.py's `Optional[...]` annotations are evaluated at runtime by Typer
+# (via typing.get_type_hints), even under `from __future__ import
+# annotations`, so they can't be rewritten to PEP 604 `X | None` syntax
+# while Python 3.9 is supported (3.9 has no runtime `|` on types).
+keep-runtime-typing = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

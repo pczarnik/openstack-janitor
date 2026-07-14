@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from enum import StrEnum
+from enum import Enum
+from typing import Optional
 
 import typer
 from openstack.exceptions import SDKException
@@ -20,7 +21,7 @@ console = Console()
 error_console = Console(stderr=True)
 
 
-class OutputFormat(StrEnum):
+class OutputFormat(str, Enum):
     """Supported `--format` values for `janitor audit`."""
 
     table = "table"
@@ -40,12 +41,12 @@ def callback() -> None:
 
 @app.command()
 def audit(
-    cloud: str | None = typer.Option(
+    cloud: Optional[str] = typer.Option(
         None,
         "--cloud",
         help="Named cloud from clouds.yaml (default: resolved from OS_CLOUD / OS_* env vars).",
     ),
-    detector: list[str] | None = typer.Option(
+    detector: Optional[list[str]] = typer.Option(
         None,
         "--detector",
         help="Run only this detector (repeatable). Default: run all registered detectors.",

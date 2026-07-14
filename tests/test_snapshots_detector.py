@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from openstack.exceptions import ForbiddenException
 
 from openstack_janitor.detectors.snapshots import OldSnapshotsDetector
 
-NOW = datetime(2026, 7, 13, tzinfo=UTC)
+NOW = datetime(2026, 7, 13, tzinfo=timezone.utc)
 
 
 def test_finds_old_snapshot(fake_conn, fake_snapshot) -> None:

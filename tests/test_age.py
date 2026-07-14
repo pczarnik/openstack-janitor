@@ -2,34 +2,34 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from openstack_janitor.age import age_in_days
 
 
 def test_z_suffix_is_parsed() -> None:
-    now = datetime(2026, 7, 13, tzinfo=UTC)
+    now = datetime(2026, 7, 13, tzinfo=timezone.utc)
     assert age_in_days("2026-07-03T00:00:00Z", now=now) == 10.0
 
 
 def test_offset_suffix_is_parsed() -> None:
-    now = datetime(2026, 7, 13, tzinfo=UTC)
+    now = datetime(2026, 7, 13, tzinfo=timezone.utc)
     assert age_in_days("2026-07-03T00:00:00+00:00", now=now) == 10.0
 
 
 def test_non_utc_offset_is_normalized() -> None:
     # 2026-07-03T02:00:00+02:00 is 2026-07-03T00:00:00 UTC.
-    now = datetime(2026, 7, 13, tzinfo=UTC)
+    now = datetime(2026, 7, 13, tzinfo=timezone.utc)
     assert age_in_days("2026-07-03T02:00:00+02:00", now=now) == 10.0
 
 
 def test_naive_string_treated_as_utc() -> None:
-    now = datetime(2026, 7, 13, tzinfo=UTC)
+    now = datetime(2026, 7, 13, tzinfo=timezone.utc)
     assert age_in_days("2026-07-03T00:00:00", now=now) == 10.0
 
 
 def test_microseconds_variant_is_parsed() -> None:
-    now = datetime(2026, 7, 13, tzinfo=UTC)
+    now = datetime(2026, 7, 13, tzinfo=timezone.utc)
     result = age_in_days("2026-07-03T00:00:00.123456Z", now=now)
     assert result is not None
     assert round(result, 3) == 10.0

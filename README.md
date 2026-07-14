@@ -10,16 +10,21 @@ A CLI that audits an OpenStack cloud for orphaned and wasteful resources.
 
 ## Install
 
+From [PyPI](https://pypi.org/project/openstack-janitor/):
+
+```sh
+pipx install openstack-janitor   # recommended for CLI use
+# or
+pip install openstack-janitor
+```
+
 From source:
 
 ```sh
-git clone <this repo>
+git clone https://github.com/mabunemeh/openstack-janitor
 cd openstack-janitor
 pip install -e .
 ```
-
-Publishing to PyPI (`pip install openstack-janitor`) and a `pipx`-friendly
-release are planned once there's more than one detector.
 
 ## Usage
 

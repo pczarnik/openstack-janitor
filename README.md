@@ -10,7 +10,8 @@ A CLI that audits an OpenStack cloud for orphaned and wasteful resources.
 
 ## Install
 
-Requires Python **3.11+**.
+Requires Python **3.9+**. On older interpreters, pip automatically selects a
+compatible older version of openstacksdk.
 
 From [PyPI](https://pypi.org/project/openstack-janitor/):
 
@@ -37,11 +38,11 @@ cd openstack-janitor
 pip install -e .
 ```
 
-> **Older distros (e.g. Ubuntu 22.04):** the system Python is older than 3.11,
-> and the distro-patched pip can fail with `No module named
-> 'packaging.licenses'` while building the metadata. Install a newer Python
-> (deadsnakes PPA, `uv python install`, or pyenv) and use a fresh venv with an
-> upgraded pip.
+> **Old distro pip (e.g. Ubuntu 22.04's pip 22.0):** source installs can fail
+> with `No module named 'packaging.licenses'` — the distro-patched pip leaks
+> the system's old `packaging` into the build environment. Installing from
+> PyPI is unaffected. For source installs, use a fresh venv with an upgraded
+> pip: `python3 -m venv .venv && .venv/bin/pip install -U pip`.
 
 ## Usage
 

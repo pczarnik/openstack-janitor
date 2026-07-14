@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from unittest.mock import MagicMock, patch
 
 from openstack.exceptions import SDKException
@@ -83,3 +84,75 @@ def test_audit_sdk_exception_exits_three() -> None:
         result = runner.invoke(app, ["audit"])
 
     assert result.exit_code == 3
+
+
+def test_audit_format_json_with_findings_parses_and_exits_one() -> None:
+    finding = Finding(
+        resource_type="volume",
+        resource_id="vol-123",
+        resource_name="orphan",
+        project_id="proj-1",
+        reason="volume is unattached (status=available)",
+    )
+    with (
+        patch("openstack_janitor.cli.get_connection", return_value=MagicMock()),
+        patch(
+            "openstack_janitor.cli.get_detectors",
+            return_value=[FakeDetector("unattached-volumes", [finding])],
+        ),
+    ):
+        result = runner.invoke(app, ["audit", "--format", "json"])
+
+    assert result.exit_code == 1
+    data = json.loads(result.stdout)
+    assert len(data) == 1
+    assert data[0]["resource_id"] == "vol-123"
+    assert data[0]["resource_type"] == "volume"
+
+
+def test_audit_format_json_no_findings_exits_zero_with_empty_array() -> None:
+    with (
+        patch("openstack_janitor.cli.get_connection", return_value=MagicMock()),
+        patch(
+            "openstack_janitor.cli.get_detectors",
+            return_value=[FakeDetector("unattached-volumes")],
+        ),
+    ):
+        result = runner.invoke(app, ["audit", "--format", "json"])
+
+    assert result.exit_code == 0
+    assert json.loads(result.stdout) == []
+
+
+def test_audit_format_html_with_findings_contains_table() -> None:
+    finding = Finding(
+        resource_type="volume",
+        resource_id="vol-123",
+        resource_name="orphan",
+        project_id="proj-1",
+        reason="volume is unattached (status=available)",
+    )
+    with (
+        patch("openstack_janitor.cli.get_connection", return_value=MagicMock()),
+        patch(
+            "openstack_janitor.cli.get_detectors",
+            return_value=[FakeDetector("unattached-volumes", [finding])],
+        ),
+    ):
+        result = runner.invoke(app, ["audit", "--format", "html"])
+
+    assert result.exit_code == 1
+    assert "<table" in result.stdout
+
+
+def test_audit_unknown_format_exits_nonzero() -> None:
+    with (
+        patch("openstack_janitor.cli.get_connection", return_value=MagicMock()),
+        patch(
+            "openstack_janitor.cli.get_detectors",
+            return_value=[FakeDetector("unattached-volumes")],
+        ),
+    ):
+        result = runner.invoke(app, ["audit", "--format", "xml"])
+
+    assert result.exit_code == 2

@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
+from enum import StrEnum
+
 import typer
 from openstack.exceptions import SDKException
 from rich.console import Console
 
 from openstack_janitor.connection import get_connection
 from openstack_janitor.detectors import get_detectors
-from openstack_janitor.reporting import print_findings
+from openstack_janitor.reporting import print_findings, render_html, render_json
 
 app = typer.Typer(
     help="Audit an OpenStack cloud for orphaned and wasteful resources.",
@@ -16,6 +18,14 @@ app = typer.Typer(
 )
 console = Console()
 error_console = Console(stderr=True)
+
+
+class OutputFormat(StrEnum):
+    """Supported `--format` values for `janitor audit`."""
+
+    table = "table"
+    json = "json"
+    html = "html"
 
 
 @app.callback()
@@ -40,12 +50,18 @@ def audit(
         "--detector",
         help="Run only this detector (repeatable). Default: run all registered detectors.",
     ),
+    output_format: OutputFormat = typer.Option(
+        OutputFormat.table,
+        "--format",
+        help="Output format: table for humans, json/html for reports or piping.",
+    ),
 ) -> None:
     """Scan the cloud and report orphaned/wasteful resources.
 
     Exit codes: 0 = no findings, 1 = findings were reported (useful for cron
     jobs), 2 = an unknown --detector name was given, 3 = connection or
-    authentication to the cloud failed.
+    authentication to the cloud failed. Exit-code behavior is the same for
+    every --format.
     """
     all_detectors = get_detectors()
     selected = all_detectors
@@ -69,7 +85,15 @@ def audit(
         error_console.print(f"[red]Failed to connect to OpenStack cloud: {exc}[/red]")
         raise typer.Exit(code=3) from exc
 
-    print_findings(findings, console)
+    if output_format is OutputFormat.json:
+        # Machine-readable: use plain print(), never the rich console -- rich
+        # would wrap lines and inject markup, corrupting the JSON output.
+        print(render_json(findings))
+    elif output_format is OutputFormat.html:
+        print(render_html(findings))
+    else:
+        print_findings(findings, console)
+
     raise typer.Exit(code=1 if findings else 0)
 
 

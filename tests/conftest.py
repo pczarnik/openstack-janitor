@@ -18,6 +18,7 @@ PortFactory = Callable[..., SimpleNamespace]
 SnapshotFactory = Callable[..., SimpleNamespace]
 ServerFactory = Callable[..., SimpleNamespace]
 SecurityGroupFactory = Callable[..., SimpleNamespace]
+ImageFactory = Callable[..., SimpleNamespace]
 
 
 @pytest.fixture
@@ -129,6 +130,24 @@ def fake_security_group() -> SecurityGroupFactory:
 
 
 @pytest.fixture
+def fake_image() -> ImageFactory:
+    """Factory building fake openstacksdk image resources with sane defaults."""
+
+    def _make(**overrides: Any) -> SimpleNamespace:
+        defaults = {
+            "id": "img-0001",
+            "name": "test-image",
+            "owner": "project-0001",
+            "is_hidden": False,
+            "properties": {},
+        }
+        defaults.update(overrides)
+        return SimpleNamespace(**defaults)
+
+    return _make
+
+
+@pytest.fixture
 def fake_conn() -> MagicMock:
     """A MagicMock standing in for an openstack.connection.Connection."""
     conn = MagicMock()
@@ -138,4 +157,5 @@ def fake_conn() -> MagicMock:
     conn.network.ports.return_value = []
     conn.network.security_groups.return_value = []
     conn.compute.servers.return_value = []
+    conn.image.images.return_value = []
     return conn

@@ -4,7 +4,7 @@
 
 A CLI that audits an OpenStack cloud for orphaned and wasteful resources.
 
-**Status: early development.** Six detectors are working — see
+**Status: early development.** Seven detectors are working — see
 [Detectors](#detectors); more detectors and a `clean` command are coming — see
 [Roadmap](#roadmap).
 
@@ -89,6 +89,7 @@ fails.
 | `old-snapshots` | Volume snapshots older than a threshold (default 90 days). |
 | `shutoff-instances` | Instances in `SHUTOFF` status whose last update is older than a threshold (default 30 days). There is no "shutoff since" field in the Compute API, so the age is a conservative lower bound — the detector may under-report but never over-reports. |
 | `unused-security-groups` | Security groups not attached to any port and not referenced as a `remote_group_id` by any rule. The per-project `default` group is always skipped. |
+| `orphan-snapshot-images` | Glance images whose `block_device_mapping` references a Cinder volume snapshot that no longer exists. Includes hidden images. |
 
 All detectors are read-only. Resources without a parseable timestamp are never
 flagged by the age-based detectors. Thresholds become configurable once

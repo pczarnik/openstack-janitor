@@ -68,7 +68,7 @@ $ janitor audit --cloud my-cloud
 ┃ Type          ┃ ID        ┃ Name    ┃ Project ┃ Reason                       ┃
 ┡━━━━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
 │ volume        │ a1b2c3d4… │ old-db  │ proj-1  │ volume is unattached         │
-│               │           │         │         │ (status=available)          │
+│               │           │         │         │ (status=available)           │
 └───────────────┴───────────┴─────────┴─────────┴──────────────────────────────┘
 $ echo $?
 1

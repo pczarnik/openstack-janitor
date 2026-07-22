@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from unittest.mock import MagicMock, patch
 
 from openstack.exceptions import SDKException
@@ -12,6 +13,20 @@ from openstack_janitor.cli import app
 from openstack_janitor.detectors.base import Finding
 
 runner = CliRunner()
+
+_ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
+
+
+def _strip_ansi(text: str) -> str:
+    """Drop ANSI color codes from CLI output.
+
+    Typer renders help through rich, which emits color when it detects a
+    capable stream (it does under CI, not in a plain captured terminal). With
+    color on, an option name like ``--cloud`` is split by escape codes between
+    its hyphens, so a raw ``"--cloud" in output`` check fails only in CI.
+    Strip the codes first so help-text assertions are colour-independent.
+    """
+    return _ANSI_RE.sub("", text)
 
 
 class FakeDetector:
@@ -98,12 +113,13 @@ def test_audit_help_short_option() -> None:
     result = runner.invoke(app, ["audit", "-h"])
 
     assert result.exit_code == 0
-    assert "-c" in result.stdout
-    assert "--cloud" in result.stdout
-    assert "-d" in result.stdout
-    assert "--detector" in result.stdout
-    assert "-f" in result.stdout
-    assert "--format" in result.stdout
+    help_text = _strip_ansi(result.stdout)
+    assert "-c" in help_text
+    assert "--cloud" in help_text
+    assert "-d" in help_text
+    assert "--detector" in help_text
+    assert "-f" in help_text
+    assert "--format" in help_text
 
 
 def test_audit_sdk_exception_exits_three() -> None:

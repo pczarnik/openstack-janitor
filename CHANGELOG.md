@@ -4,6 +4,20 @@ All notable changes to this project are documented in this file. The format
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions
 follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-07-22
+
+### Added
+
+- `orphan-snapshot-images` detector — flags Glance images whose
+  `block_device_mapping` references a Cinder volume snapshot that no longer
+  exists (hidden images included). Detector count is now seven.
+- `janitor detectors` command — lists every registered detector and its
+  description without connecting to a cloud.
+- Short options for `janitor audit`: `-c/--cloud`, `-d/--detector`,
+  `-f/--format`, `-h/--help`.
+
+Thanks to @pczarnik for all three contributions.
+
 ## [0.1.1] - 2026-07-14
 
 ### Changed
@@ -42,5 +56,6 @@ First release: the complete read-only audit story.
 - Non-admin fallback: detectors that use admin-only `all_projects` listings
   retry scoped to the caller's own project when forbidden.
 
+[0.2.0]: https://github.com/mabunemeh/openstack-janitor/releases/tag/v0.2.0
 [0.1.1]: https://github.com/mabunemeh/openstack-janitor/releases/tag/v0.1.1
 [0.1.0]: https://github.com/mabunemeh/openstack-janitor/releases/tag/v0.1.0
